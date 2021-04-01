@@ -8,6 +8,7 @@ ARG PROTOC_GEN_GO_VERSION=1.4.3
 # v1.3.2, using the version directly does not work: "tar: invalid magic"
 ARG PROTOC_GEN_GOGO_VERSION=b03c65ea87cdc3521ede29f62fe3ce239267c1bc
 ARG PROTOC_GEN_LINT_VERSION=0.2.1
+ARG PROTO_OTEL_VERSION=0.8.0
 ARG UPX_VERSION=3.96
 
 FROM alpine:${ALPINE_VERSION} as protoc_base
@@ -91,6 +92,14 @@ RUN mkdir -p ${GOPATH}/src/github.com/gogo/protobuf && \
     mkdir -p /out/usr/include/github.com/gogo/protobuf/protobuf/google/protobuf && \
     install -D $(find ./protobuf/google/protobuf -name '*.proto') -t /out/usr/include/github.com/gogo/protobuf/protobuf/google/protobuf && \
     install -D ./gogoproto/gogo.proto /out/usr/include/github.com/gogo/protobuf/gogoproto/gogo.proto
+
+# OTEL
+ARG PROTO_OTEL_VERSION
+RUN mkdir -p ${GOPATH}/src/github.com/open-telemetry/opentelemetry-proto && \
+    curl -sSL https://api.github.com/repos/open-telemetry/opentelemetry-proto/tarball/v${PROTO_OTEL_VERSION} | tar xz --strip 1 -C ${GOPATH}/src/github.com/open-telemetry/opentelemetry-proto &&\
+    cd ${GOPATH}/src/github.com/open-telemetry/opentelemetry-proto && \
+    mkdir -p /out/usr/include/github.com/open-telemetry/opentelemetry-proto/protobuf/google/protobuf && \
+    install -D ./opentelemetry/proto/metrics/v1/metrics.proto /out/usr/include/github.com/open-telemetry/opentelemetry-proto/opentelemetry/proto/metrics/v1/metrics.proto
 
 ARG PROTOC_GEN_LINT_VERSION
 RUN cd / && \
